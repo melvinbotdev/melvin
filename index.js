@@ -87,13 +87,14 @@ app.post('/webhook/', function (req, res) {
     }
     res.sendStatus(200)
 })
+let fb_token = FB_PAGE_TOKEN;
 function sendTextMessage(sender, text) {
   let  messageData = {
         text:text
     }
     request2({
         url: 'https://graph.facebook.com/v2.8/me/messages',
-        qs: {access_token:FB_PAGE_TOKEN},
+        qs: {access_token:fb_token},
         method: 'POST',
         json: {
             recipient: {id:sender},
