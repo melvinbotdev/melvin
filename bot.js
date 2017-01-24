@@ -3,6 +3,7 @@
 // Weather Example
 // See https://wit.ai/sungkim/weather/stories and https://wit.ai/docs/quickstart
 const Wit = require('node-wit').Wit;
+const Log = require('node-wit').Logger;
 const FB = require('./facebook.js');
 const Config = require('./const.js');
 
