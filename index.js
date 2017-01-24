@@ -8,7 +8,7 @@
 //
 const bodyParser = require('body-parser');
 const express = require('express');
-
+const request2 = require('request');
 // get Bot, const, and Facebook API
 const bot = require('./bot.js');
 const Config = require('./const.js');
@@ -91,7 +91,7 @@ function sendTextMessage(sender, text) {
   let  messageData = {
         text:text
     }
-    request({
+    request2({
         url: 'https://graph.facebook.com/v2.8/me/messages',
         qs: {access_token:FB_PAGE_TOKEN},
         method: 'POST',
