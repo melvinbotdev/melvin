@@ -1,109 +1,146 @@
-'use strict';
+//This is still work in progress
+/*
+Please report any bugs to nicomwaks@gmail.com
 
-// Messenger API integration example
-// We assume you have:
-// * a Wit.ai bot setup (https://wit.ai/docs/quickstart)
-// * a Messenger Platform setup (https://developers.facebook.com/docs/messenger-platform/quickstart)
-// You need to `npm install` the following dependencies: body-parser, express, request.
-//
-const bodyParser = require('body-parser');
-const express = require('express');
-const request2 = require('request');
-// get Bot, const, and Facebook API
+i have added console.log on line 48 
+
+ */
+'use strict'
+
+const express = require('express')
+const bodyParser = require('body-parser')
+const request = require('request')
+const Config = require('./const.js') 
+const FB = require('./facebook.js')
 const bot = require('./bot.js');
-const Config = require('./const.js');
-const FB = require('./facebook.js');
+const Wit = require('node-wit').Wit
+const Log = require('node-wit').Logger
+const app = express()
 
 // Setting up our bot
-const wit = bot.getWit();
+const Wit = bot.getWit();
 
-// Webserver parameter
-const PORT = process.env.PORT || 8445;
+app.set('port', (process.env.PORT || 5000))
 
-// Wit.ai bot specific code
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({extended: false}))
 
-// This will contain all user sessions.
-// Each session has an entry:
-// sessionId -> {fbid: facebookUserId, context: sessionState}
-const sessions = {};
+// parse application/json
+app.use(bodyParser.json())
 
-const findOrCreateSession = (fbid) => {
-  let sessionId;
-  // Let's see if we already have a session for the user fbid
-  Object.keys(sessions).forEach(k => {
-    if (sessions[k].fbid === fbid) {
-      // Yep, got it!
-      sessionId = k;
-    }
-  });
-  if (!sessionId) {
-    // No session found for user fbid, let's create a new one
-    sessionId = new Date().toISOString();
-    sessions[sessionId] = {
-      fbid: fbid,
-      context: {
-        _fbid_: fbid
-      }
-    }; // set context, _fid_
-  }
-  return sessionId;
-};
+// index
+app.get('/', function (req, res) {
+	res.send('hello world i am a secret bot')
+})
 
-// Starting our webserver and putting it all together
-const app = express();
-app.set('port', PORT);
-app.listen(app.get('port'));
-app.use(bodyParser.json());
-console.log("I'm wating for you @" + PORT);
+// for facebook verification
+app.get('/webhook/', function (req, res) {
+	if (req.query['hub.verify_token'] === Config.FB_VERIFY_TOKEN) {
+		res.send(req.query['hub.challenge'])
+	} else {
+		res.send('Error, wrong token')
+	}
+})
 
-// index. Let's say something fun
-app.get('/', function(req, res) {
-  res.send('"Only those who will risk going too far can possibly find out how far one can go." - T.S. Eliot');
-});
-
-// Webhook verify setup using FB_VERIFY_TOKEN
-app.get('/webhook/', (req, res) => {
-  if (!Config.FB_VERIFY_TOKEN) {
-    throw new Error('missing FB_VERIFY_TOKEN');
-  }
-  if (req.query['hub.mode'] === 'subscribe' &&
-    req.query['hub.verify_token'] === Config.FB_VERIFY_TOKEN) {
-    res.send(req.query['hub.challenge']);
-  } else {
-    res.sendStatus(400);
-  }
-});
-
-// The main message handler
+// to post data
 app.post('/webhook/', function (req, res) {
-   let messaging_events = req.body.entry[0].messaging
-    for (let i = 0; i < messaging_events.length; i++) {
-        let event = req.body.entry[0].messaging[i]
-        let sender = event.sender.id
-        if (event.message && event.message.text) {
-           let text = event.message.text
-            sendTextMessage(sender, "Text received, echo: " + text.substring(0, 200))
-        }
-    }
-    res.sendStatus(200)
-});
+	let messaging_events = req.body.entry[0].messaging
+	for (let i = 0; i < messaging_events.length; i++) {
+		let event = req.body.entry[0].messaging[i]
+		let sender = event.sender.id
+		if (event.message && event.message.text) {
+			let text = event.message.text
+			if (text === 'Generic'){ 
+				console.log("welcome to chatbot")
+				//sendGenericMessage(sender)
+				continue
+			}
+			sendTextMessage(sender, "Text received, echo: " + text.substring(0, 200))
+		}
+		if (event.postback) {
+			let text = JSON.stringify(event.postback)
+			sendTextMessage(sender, "Postback received: "+text.substring(0, 200), token)
+			continue
+		}
+	}
+	res.sendStatus(200)
+})
+
+
+// recommended to inject access tokens as environmental variables, e.g.
+ const token = Config.FB_PAGE_TOKEN
+// const token = "<FB_PAGE_ACCESS_TOKEN>"
+
 function sendTextMessage(sender, text) {
-  let  messageData = {
-        text:text
-    }
-    request2({
-        url: 'https://graph.facebook.com/v2.8/me/messages',
-        qs: {access_token:FB_PAGE_TOKEN},
-        method: 'POST',
-        json: {
-            recipient: {id:sender},
-            message: messageData,
-        }
-    }, function(error, response, body) {
-        if (error) {
-            console.log('Error sending messages: ', error)
-        } else if (response.body.error) {
-            console.log('Error: ', response.body.error)
-        }
-    });
+	let messageData = { text:text }
+	
+	request({
+		url: 'https://graph.facebook.com/v2.8/me/messages',
+		qs: {access_token:Config.FB_PAGE_TOKEN},
+		method: 'POST',
+		json: {
+			recipient: {id:sender},
+			message: messageData,
+		}
+	}, function(error, response, body) {
+		if (error) {
+			console.log('Error sending messages: ', error)
+		} else if (response.body.error) {
+			console.log('Error: ', response.body.error)
+		}
+	})
 }
+
+function sendGenericMessage(sender) {
+	let messageData = {
+		"attachment": {
+			"type": "template",
+			"payload": {
+				"template_type": "generic",
+				"elements": [{
+					"title": "First card",
+					"subtitle": "Element #1 of an hscroll",
+					"image_url": "http://messengerdemo.parseapp.com/img/rift.png",
+					"buttons": [{
+						"type": "web_url",
+						"url": "https://www.messenger.com",
+						"title": "web url"
+					}, {
+						"type": "postback",
+						"title": "Postback",
+						"payload": "Payload for first element in a generic bubble",
+					}],
+				}, {
+					"title": "Second card",
+					"subtitle": "Element #2 of an hscroll",
+					"image_url": "http://messengerdemo.parseapp.com/img/gearvr.png",
+					"buttons": [{
+						"type": "postback",
+						"title": "Postback",
+						"payload": "Payload for second element in a generic bubble",
+					}],
+				}]
+			}
+		}
+	}
+	request({
+		url: 'https://graph.facebook.com/v2.8/me/messages',
+		qs: {access_token:FB_PAGE_TOKEN},
+		method: 'POST',
+		json: {
+			recipient: {id:sender},
+			message: messageData,
+		}
+	}, function(error, response, body) {
+		if (error) {
+			console.log('Error sending messages: ', error)
+		} else if (response.body.error) {
+			console.log('Error: ', response.body.error)
+		}
+	})
+}
+
+// spin spin sugar
+app.listen(app.get('port'), function() {
+	console.log('running on port', app.get('port'))
+})
