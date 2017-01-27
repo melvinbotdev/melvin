@@ -20,7 +20,7 @@ const fetch = require('node-fetch');
 const request = require('request');
 const Config = require('./const.js');
 const Wit = require('node-wit').Wit;
-const Log = require('node-wit').Logger;
+const Log = require('node-wit').log;
 /* let Wit = null;
 let log = null;
 try {
@@ -137,7 +137,7 @@ const actions = {
 const wit = new Wit({
   accessToken: Config.WIT_TOKEN,
   actions,
-  logger: Log(Log.INFO)
+  logger: Log.Logger(Log.INFO)
 });
 
 // Starting our webserver and putting it all together
