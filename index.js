@@ -3,8 +3,7 @@
 Please report any bugs to nicomwaks@gmail.com
 
 i have added console.log on line 48 
-
- */
+*/
 'use strict'
 
 const express = require('express')
@@ -16,9 +15,6 @@ const bot = require('./bot.js');
 const Wit = require('node-wit').Wit
 const Log = require('node-wit').Logger
 const app = express()
-
-// Setting up our bot
-const Wit = bot.getWit();
 
 app.set('port', (process.env.PORT || 5000))
 
