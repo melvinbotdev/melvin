@@ -12,7 +12,6 @@ const request = require('request')
 const Config = require('./const.js') 
 const FB = require('./facebook.js')
 const bot = require('./bot.js')
-const Wit = require('node-wit').Wit
 const Log = require('node-wit').Logger
 const app = express()
 
