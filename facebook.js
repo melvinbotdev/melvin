@@ -137,7 +137,7 @@ const actions = {
 const wit = new Wit({
   accessToken: Config.WIT_TOKEN,
   actions,
-  logger: Log.Logger(Log.INFO)
+  logger: Log(Log.INFO)
 });
 
 // Starting our webserver and putting it all together
