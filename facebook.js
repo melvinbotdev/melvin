@@ -19,7 +19,7 @@ const express = require('express');
 const fetch = require('node-fetch');
 const request = require('request');
 const Config = require('./const.js');
-
+const Wit = require('node-wit').Wit;
 /* let Wit = null;
 let log = null;
 try {
@@ -134,7 +134,7 @@ const actions = {
 
 // Setting up our bot
 const wit = new Wit({
-  accessToken: WIT_TOKEN,
+  accessToken: Config.WIT_TOKEN,
   actions,
   logger: new log.Logger(log.INFO)
 });
