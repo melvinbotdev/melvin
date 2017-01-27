@@ -36,12 +36,12 @@ try {
 const PORT = process.env.PORT || 8445;
 
 // Wit.ai parameters
-const WIT_TOKEN = process.env.WIT_TOKEN;
+const WIT_TOKEN = Config.WIT_TOKEN;
 
 // Messenger API parameters
-const FB_PAGE_TOKEN = process.env.Config.FB_PAGE_TOKEN;
+const FB_PAGE_TOKEN = Config.FB_PAGE_TOKEN;
 if (!FB_PAGE_TOKEN) { throw new Error('missing FB_PAGE_TOKEN') }
-const FB_APP_SECRET = process.env.Config.FB_APP_SECRET;
+const FB_APP_SECRET = Config.FB_APP_SECRET;
 if (!FB_APP_SECRET) { throw new Error('missing FB_APP_SECRET') }
 
 let FB_VERIFY_TOKEN = null;
